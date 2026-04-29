@@ -45,16 +45,7 @@ public class DeepSeekChatExample {
         System.out.println("DeepSeek Chat 用例");
         System.out.println("=".repeat(60));
 
-        basicChat(chatClient);
-        chatWithTemperature(chatClient);
-        chatWithMaxTokens(chatClient);
-        chatWithTopP(chatClient);
-        chatWithSystemMessage(chatClient);
-        streamChat(chatClient);
-        chatWithPresencePenalty(chatClient);
-        chatWithFrequencyPenalty(chatClient);
-        chatWithStopSequences(chatClient);
-        advancedChat(chatClient);
+        entityChat(chatClient);
 
         System.out.println("=".repeat(60));
         System.out.println("所有用例完成!");
@@ -66,6 +57,22 @@ public class DeepSeekChatExample {
         String response = chatClient.prompt("法国的首都是什么?").call().content();
         System.out.println("用户: 法国的首都是什么?");
         System.out.println("助手: " + response);
+    }
+    private static void entityChat(ChatClient chatClient) {
+        System.out.println("\n--- 基本对话, 返回 entity ---");
+        City city = chatClient.prompt("法国的首都是什么?").call().entity(City.class);
+        System.out.println("用户: 法国的首都是什么?");
+        System.out.println("助手: name=" + city.getName());
+        System.out.println("助手: country=" + city.getCountry());
+    }
+
+    static class City{
+        String name;
+        String country;
+        public String getName() { return name; }
+        public void setName(String name) { this.name = name; }
+        public String getCountry() { return country; }
+        public void setCountry(String country) { this.country = country; }
     }
 
     private static void chatWithTemperature(ChatClient chatClient) {

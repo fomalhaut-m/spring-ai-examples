@@ -7,8 +7,12 @@
         <sourceTestOutputDir name="target/generated-test-sources/test-annotations" />
         <outputRelativeToContentRoot value="true" />
         <module name="spring-ai-chat-model-examples" />
-        <module name="spring-ai-embedding-model-examples" />
+        <module name="spring-ai-advisors-examples" />
       </profile>
     </annotationProcessing>
+    <bytecodeTargetLevel>
+      <module name="spring-ai-embedding-model-examples" target="17" />
+      <module name="spring-ai-tool-examples" target="17" />
+    </bytecodeTargetLevel>
   </component>
 </project>
