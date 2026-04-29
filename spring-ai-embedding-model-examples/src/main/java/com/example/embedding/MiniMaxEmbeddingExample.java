@@ -2,10 +2,12 @@ package com.example.embedding.minimax;
 
 import java.util.List;
 
+import org.springframework.ai.document.MetadataMode;
 import org.springframework.ai.embedding.Embedding;
 import org.springframework.ai.embedding.EmbeddingModel;
 import org.springframework.ai.embedding.EmbeddingResponse;
 import org.springframework.ai.minimax.MiniMaxEmbeddingModel;
+import org.springframework.ai.minimax.MiniMaxEmbeddingOptions;
 import org.springframework.ai.minimax.api.MiniMaxApi;
 
 public class MiniMaxEmbeddingExample {
@@ -13,7 +15,7 @@ public class MiniMaxEmbeddingExample {
     public static void main(String[] args) {
         String apiKey = System.getenv("MINIMAX_API_KEY");
         if (apiKey == null || apiKey.isEmpty()) {
-            apiKey = "your-api-key-here";
+            apiKey = "sk-cp-0cx8-H-KKo14uqdNurVEZFw_U2KRjadkIGl3c41wfSVge75_ZE-v9GJHhtRyxZD96_l2461T8bK8KjGSRWwUj21Uhs_M1waHOZCuTViL3Vlvn10jh4iFPL0";
         }
 
         var embeddingModel = createEmbeddingModel(apiKey);
@@ -23,7 +25,11 @@ public class MiniMaxEmbeddingExample {
 
     private static EmbeddingModel createEmbeddingModel(String apiKey) {
         return new MiniMaxEmbeddingModel(
-                new MiniMaxApi(apiKey));
+                new MiniMaxApi(apiKey),
+                MetadataMode.ALL,
+                MiniMaxEmbeddingOptions.builder()
+                .model("embo-01")
+                .build());
     }
 
     private static void runExamples(EmbeddingModel embeddingModel) {
