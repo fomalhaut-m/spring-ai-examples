@@ -1,5 +1,9 @@
-package com.example.embedding.minimax;
+package com.example.embedding;
 
+import java.io.IOException;
+import java.net.http.HttpClient;
+import java.nio.charset.StandardCharsets;
+import java.time.Duration;
 import java.util.List;
 
 import org.springframework.ai.document.MetadataMode;
@@ -9,13 +13,22 @@ import org.springframework.ai.embedding.EmbeddingResponse;
 import org.springframework.ai.minimax.MiniMaxEmbeddingModel;
 import org.springframework.ai.minimax.MiniMaxEmbeddingOptions;
 import org.springframework.ai.minimax.api.MiniMaxApi;
+import org.springframework.ai.minimax.api.MiniMaxApiConstants;
+import org.springframework.http.HttpRequest;
+import org.springframework.http.MediaType;
+import org.springframework.http.client.ClientHttpRequestExecution;
+import org.springframework.http.client.ClientHttpRequestInterceptor;
+import org.springframework.http.client.ClientHttpResponse;
+import org.springframework.http.client.JdkClientHttpRequestFactory;
+import org.springframework.util.StreamUtils;
+import org.springframework.web.client.RestClient;
 
 public class MiniMaxEmbeddingExample {
 
     public static void main(String[] args) {
-        String apiKey = System.getenv("MINIMAX_API_KEY");
+        String apiKey = System.getenv("API_KEY");
         if (apiKey == null || apiKey.isEmpty()) {
-            apiKey = "sk-cp-0cx8-H-KKo14uqdNurVEZFw_U2KRjadkIGl3c41wfSVge75_ZE-v9GJHhtRyxZD96_l2461T8bK8KjGSRWwUj21Uhs_M1waHOZCuTViL3Vlvn10jh4iFPL0";
+            apiKey = "your-api-key-here";
         }
 
         var embeddingModel = createEmbeddingModel(apiKey);
@@ -25,11 +38,45 @@ public class MiniMaxEmbeddingExample {
 
     private static EmbeddingModel createEmbeddingModel(String apiKey) {
         return new MiniMaxEmbeddingModel(
-                new MiniMaxApi(apiKey),
+                new MiniMaxApi(
+                        MiniMaxApiConstants.DEFAULT_BASE_URL,
+                        apiKey,
+                        RestClient.builder()
+                                .requestFactory(
+                                        new JdkClientHttpRequestFactory(
+                                                HttpClient.newBuilder()
+                                                        .connectTimeout(Duration.ofSeconds(30))
+                                                        .version(HttpClient.Version.HTTP_2)
+                                                        .build()
+                                        )
+                                )
+                                .defaultHeader("Content-Type", MediaType.APPLICATION_JSON_VALUE)
+                                .defaultHeader("Accept", MediaType.APPLICATION_JSON_VALUE)
+                                .requestInterceptor((request, body, execution) ->  {
+                                    // ===================== 打印请求 =====================
+                                    System.out.println("=== 请求开始 ===");
+                                    System.out.println("方法: " + request.getMethod());
+                                    System.out.println("地址: " + request.getURI());
+                                    System.out.println("请求头: " + request.getHeaders());
+                                    System.out.println("请求体: " + new String(body, StandardCharsets.UTF_8));
+
+                                    // 执行请求
+                                    ClientHttpResponse response = execution.execute(request, body);
+
+                                    // ===================== 打印响应（关键：用官方包装类） =====================
+
+                                    System.out.println("\n=== 响应开始 ===");
+                                    System.out.println("状态码: " + response.getStatusCode());
+                                    System.out.println("响应头: " + response.getHeaders());
+
+                                    // 不可以读取 响应体, 否则会报异常
+                                    return response;
+                                })
+                ),
                 MetadataMode.ALL,
                 MiniMaxEmbeddingOptions.builder()
-                .model("embo-01")
-                .build());
+                        .model(MiniMaxApi.EmbeddingModel.Embo_01.getValue())
+                        .build());
     }
 
     private static void runExamples(EmbeddingModel embeddingModel) {
