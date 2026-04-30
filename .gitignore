@@ -2,6 +2,7 @@ target/
 !.mvn/wrapper/maven-wrapper.jar
 !**/src/main/**/target/
 !**/src/test/**/target/
+**/target/**
 
 ### STS ###
 .apt_generated
@@ -17,6 +18,7 @@ bin/
 
 ### IntelliJ IDEA ###
 .idea
+**/.idea/**
 *.iws
 *.iml
 *.ipr
@@ -45,3 +47,4 @@ mvnw.cmd
 ### OS ###
 .DS_Store
 Thumbs.db
+/.idea/

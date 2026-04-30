@@ -21,10 +21,12 @@ import org.springframework.web.client.RestClient;
 public class MiniMaxEmbeddingExample {
 
     public static void main(String[] args) {
-        String apiKey = System.getenv("API_KEY");
+        String apiKey = System.getenv("MINIMAX_API_KEY");
         if (apiKey == null || apiKey.isEmpty()) {
             apiKey = "your-api-key-here";
         }
+
+        System.out.println(apiKey);
 
         var embeddingModel = createEmbeddingModel(apiKey);
 
