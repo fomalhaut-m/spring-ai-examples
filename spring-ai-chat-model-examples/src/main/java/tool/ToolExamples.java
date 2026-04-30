@@ -33,9 +33,9 @@ public class ToolExamples {
      * 3. 运行不同类型的工具调用示例
      */
     public static void main(String[] args){
-        String apiKey = System.getenv("MINIMAX_API_KEY");
+        String apiKey = System.getenv("MINIMAX_API_KEY2");
         if (apiKey == null || apiKey.isEmpty()) {
-            apiKey = "MINIMAX_API_KEY";
+            apiKey = "MINIMAX_API_KEY2";
         }
 
         var chatModel = new MiniMaxChatModel(

@@ -17,6 +17,9 @@
          3. spring-ai-mcp-client-examples：MCP 客户端示例
          4. spring-ai-rag-examples：RAG 检索增强生成示例
          5. spring-ai-mcp-server-examples：MCP 服务器示例
+         6. spring-ai-rag-redis-examples：Redis 向量存储 RAG 示例
+         7. spring-ai-rag-chroma-examples：Chroma 向量存储 RAG 示例
+         8. spring-ai-wiki-examples：Wiki 知识库问答系统（带 Web 界面）
     -->
     <modules>
         <module>spring-ai-advisors-examples</module>
@@ -24,5 +27,8 @@
         <module>spring-ai-mcp-client-examples</module>
         <module>spring-ai-rag-examples</module>
         <module>spring-ai-mcp-server-examples</module>
+        <module>spring-ai-rag-redis-examples</module>
+        <module>spring-ai-rag-chroma-examples</module>
+        <module>spring-ai-wiki-examples</module>
     </modules>
 </project>

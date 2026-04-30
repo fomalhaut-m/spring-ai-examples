@@ -1,0 +1,90 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+
+    <!-- 父 POM：Spring Boot -->
+    <!-- 【关键点】
+         1. 继承 Spring Boot 的默认配置
+         2. 版本 3.3.5，需要 Java 17+
+    -->
+    <parent>
+        <groupId>org.springframework.boot</groupId>
+        <artifactId>spring-boot-starter-parent</artifactId>
+        <version>3.3.5</version>
+        <relativePath />
+    </parent>
+
+    <!-- 项目基本信息 -->
+    <groupId>fomalhaut</groupId>
+    <artifactId>spring-ai-rag-redis-examples</artifactId>
+    <version>1.0.0</version>
+
+    <!-- 属性配置 -->
+    <properties>
+        <maven.compiler.source>17</maven.compiler.source>
+        <maven.compiler.target>17</maven.compiler.target>
+        <spring.ai.version>1.1.4</spring.ai.version>
+    </properties>
+
+    <!-- 依赖管理：导入 Spring AI BOM -->
+    <!-- 【关键点】
+         1. BOM 统一管理 Spring AI 依赖版本
+         2. 避免版本冲突
+    -->
+    <dependencyManagement>
+        <dependencies>
+            <dependency>
+                <groupId>org.springframework.ai</groupId>
+                <artifactId>spring-ai-bom</artifactId>
+                <version>${spring.ai.version}</version>
+                <type>pom</type>
+                <scope>import</scope>
+            </dependency>
+        </dependencies>
+    </dependencyManagement>
+
+    <!-- 依赖列表 -->
+    <dependencies>
+
+        <!-- Spring Boot 基础依赖 -->
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter</artifactId>
+        </dependency>
+
+        <!-- MiniMax 模型支持（用于聊天生成） -->
+        <!-- 【关键点】
+             1. 用于 RAG 中的生成部分
+             2. 生成最终回答
+        -->
+        <dependency>
+            <groupId>org.springframework.ai</groupId>
+            <artifactId>spring-ai-starter-model-minimax</artifactId>
+        </dependency>
+
+        <!-- Redis 向量存储支持 -->
+        <!-- 【关键点】
+             1. 提供 RedisVectorStore 实现
+             2. 支持向量存储和相似性搜索
+             3. 需要 Redis Stack（支持向量搜索）
+        -->
+        <dependency>
+            <groupId>org.springframework.ai</groupId>
+            <artifactId>spring-ai-starter-vector-store-redis</artifactId>
+        </dependency>
+
+        <!-- Redis 连接依赖 -->
+        <!-- 【关键点】
+             1. 连接 Redis 服务器
+             2. 提供 JedisPooled 客户端
+        -->
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-data-redis</artifactId>
+        </dependency>
+
+    </dependencies>
+
+</project>

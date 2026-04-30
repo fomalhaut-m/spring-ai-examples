@@ -34,7 +34,7 @@ public class InMemoryChatMemoryRepositoryExample {
      * 3. 运行多个示例方法
      */
     public static void main(String[] args) {
-        String apiKey = System.getenv("MINIMAX_API_KEY");
+        String apiKey = System.getenv("MINIMAX_API_KEY2");
         if (apiKey == null || apiKey.isEmpty()) {
             apiKey = "sk-cp-0cx8-H-KKo14uqdNurVEZFw_U2KRjadkIGl3c41wfSVge75_ZE-v9GJHhtRyxZD96_l2461T8bK8KjGSRWwUj21Uhs_M1waHOZCuTViL3Vlvn10jh4iFPL0";
         }

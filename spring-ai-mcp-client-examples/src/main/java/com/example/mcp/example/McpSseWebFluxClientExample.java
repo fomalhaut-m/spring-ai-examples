@@ -22,7 +22,7 @@ public class McpSseWebFluxClientExample {
     private static final Logger logger = LoggerFactory.getLogger(McpSseWebFluxClientExample.class);
 
     public static void main(String[] args) {
-        String apiKey = System.getenv("MINIMAX_API_KEY");
+        String apiKey = System.getenv("MINIMAX_API_KEY2");
         if (apiKey == null || apiKey.isEmpty()) {
             apiKey = "your-api-key";
         }

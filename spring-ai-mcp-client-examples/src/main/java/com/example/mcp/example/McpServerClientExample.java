@@ -41,7 +41,7 @@ public class McpServerClientExample implements CommandLineRunner {
 
     @Override
     public void run(String... args) throws Exception {
-        String apiKey = System.getenv("MINIMAX_API_KEY");
+        String apiKey = System.getenv("MINIMAX_API_KEY2");
         if (apiKey == null || apiKey.isEmpty()) {
             apiKey = "your-api-key";
         }
@@ -94,7 +94,7 @@ public class McpServerClientExample implements CommandLineRunner {
 
     @Bean
     public ChatModel chatModel() {
-        String apiKey = System.getenv("MINIMAX_API_KEY");
+        String apiKey = System.getenv("MINIMAX_API_KEY2");
         if (apiKey == null || apiKey.isEmpty()) {
             apiKey = "your-api-key";
         }
