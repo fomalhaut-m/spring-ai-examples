@@ -4,6 +4,11 @@
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
 
+    <!-- 父 POM：Spring Boot -->
+    <!-- 【关键点】
+         1. 继承 Spring Boot 的默认配置
+         2. 版本 3.3.5，需要 Java 17+
+    -->
     <parent>
         <groupId>org.springframework.boot</groupId>
         <artifactId>spring-boot-starter-parent</artifactId>
@@ -11,16 +16,23 @@
         <relativePath />
     </parent>
 
+    <!-- 项目基本信息 -->
     <groupId>fomalhaut</groupId>
     <artifactId>spring-ai-chat-model-examples</artifactId>
     <version>1.0.0</version>
 
+    <!-- 属性配置 -->
     <properties>
         <maven.compiler.source>17</maven.compiler.source>
         <maven.compiler.target>17</maven.compiler.target>
         <spring.ai.version>1.1.4</spring.ai.version>
     </properties>
 
+    <!-- 依赖管理：导入 Spring AI BOM -->
+    <!-- 【关键点】
+         1. BOM 统一管理 Spring AI 依赖版本
+         2. 避免版本冲突
+    -->
     <dependencyManagement>
         <dependencies>
             <dependency>
@@ -33,49 +45,90 @@
         </dependencies>
     </dependencyManagement>
 
+    <!-- 依赖列表 -->
     <dependencies>
 
-        <!-- Spring Boot Starter -->
+        <!-- Spring Boot 基础依赖 -->
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter</artifactId>
         </dependency>
 
+        <!-- OpenAI 模型支持 -->
+        <!-- 【关键点】
+             1. 支持 GPT-3.5、GPT-4 等模型
+             2. 需要 OpenAI API 密钥
+        -->
         <dependency>
             <groupId>org.springframework.ai</groupId>
             <artifactId>spring-ai-starter-model-openai</artifactId>
         </dependency>
 
+        <!-- 智谱 AI 模型支持 -->
+        <!-- 【关键点】
+             1. 支持 GLM-3、GLM-4 等模型
+             2. 需要智谱 AI API 密钥
+        -->
         <dependency>
             <groupId>org.springframework.ai</groupId>
             <artifactId>spring-ai-starter-model-zhipuai</artifactId>
         </dependency>
 
+        <!-- Ollama 本地模型支持 -->
+        <!-- 【关键点】
+             1. 支持本地部署的模型
+             2. 需要安装 Ollama 并运行模型
+        -->
         <dependency>
             <groupId>org.springframework.ai</groupId>
             <artifactId>spring-ai-starter-model-ollama</artifactId>
         </dependency>
 
+        <!-- MiniMax 模型支持 -->
+        <!-- 【关键点】
+             1. 支持 abab 系列模型
+             2. 需要 MiniMax API 密钥
+        -->
         <dependency>
             <groupId>org.springframework.ai</groupId>
             <artifactId>spring-ai-starter-model-minimax</artifactId>
         </dependency>
 
+        <!-- Mistral AI 模型支持 -->
+        <!-- 【关键点】
+             1. 支持 Mistral 系列模型
+             2. 需要 Mistral AI API 密钥
+        -->
         <dependency>
             <groupId>org.springframework.ai</groupId>
             <artifactId>spring-ai-starter-model-mistral-ai</artifactId>
         </dependency>
 
+        <!-- HuggingFace 模型支持 -->
+        <!-- 【关键点】
+             1. 支持 HuggingFace 上的模型
+             2. 需要 HuggingFace API 密钥或本地模型
+        -->
         <dependency>
             <groupId>org.springframework.ai</groupId>
             <artifactId>spring-ai-starter-model-huggingface</artifactId>
         </dependency>
 
+        <!-- DeepSeek 模型支持 -->
+        <!-- 【关键点】
+             1. 支持 DeepSeek 系列模型
+             2. 需要 DeepSeek API 密钥
+        -->
         <dependency>
             <groupId>org.springframework.ai</groupId>
             <artifactId>spring-ai-starter-model-deepseek</artifactId>
         </dependency>
 
+        <!-- Anthropic 模型支持 -->
+        <!-- 【关键点】
+             1. 支持 Claude 系列模型
+             2. 需要 Anthropic API 密钥
+        -->
         <dependency>
             <groupId>org.springframework.ai</groupId>
             <artifactId>spring-ai-starter-model-anthropic</artifactId>

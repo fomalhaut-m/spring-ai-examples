@@ -4,6 +4,11 @@
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
 
+    <!-- 父 POM：Spring Boot -->
+    <!-- 【关键点】
+         1. 继承 Spring Boot 的默认配置
+         2. 版本 3.3.5，需要 Java 17+
+    -->
     <parent>
         <groupId>org.springframework.boot</groupId>
         <artifactId>spring-boot-starter-parent</artifactId>
@@ -11,16 +16,23 @@
         <relativePath />
     </parent>
 
+    <!-- 项目基本信息 -->
     <groupId>fomalhaut</groupId>
     <artifactId>spring-ai-mcp-server-examples</artifactId>
     <version>1.0.0</version>
 
+    <!-- 属性配置 -->
     <properties>
         <maven.compiler.source>17</maven.compiler.source>
         <maven.compiler.target>17</maven.compiler.target>
         <spring.ai.version>1.1.4</spring.ai.version>
     </properties>
 
+    <!-- 依赖管理：导入 Spring AI BOM -->
+    <!-- 【关键点】
+         1. BOM 统一管理 Spring AI 依赖版本
+         2. 避免版本冲突
+    -->
     <dependencyManagement>
         <dependencies>
             <dependency>
@@ -33,13 +45,22 @@
         </dependencies>
     </dependencyManagement>
 
+    <!-- 依赖列表 -->
     <dependencies>
 
+        <!-- Spring Boot 基础依赖 -->
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter</artifactId>
         </dependency>
 
+        <!-- MCP 服务器支持（WebFlux） -->
+        <!-- 【关键点】
+             1. 提供 MCP 服务器核心功能
+             2. 支持 @McpTool、@McpResource、@McpPrompt 注解
+             3. 支持 SSE、Streamable HTTP、STDIO 等传输方式
+             4. 使用 WebFlux 实现非阻塞 I/O
+        -->
         <dependency>
             <groupId>org.springframework.ai</groupId>
             <artifactId>spring-ai-starter-mcp-server-webflux</artifactId>

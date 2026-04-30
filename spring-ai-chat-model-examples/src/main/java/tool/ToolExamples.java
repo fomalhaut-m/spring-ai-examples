@@ -13,8 +13,25 @@ import org.springframework.ai.tool.method.MethodToolCallback;
 import org.springframework.ai.tool.support.ToolDefinitions;
 import org.springframework.util.ReflectionUtils;
 
+/**
+ * Spring AI 工具调用示例
+ * 
+ * 【关键点】
+ * 1. 注解式工具：使用 @Tool 注解，自动生成 JSON Schema
+ * 2. 编程式工具：使用 MethodToolCallback，动态注册
+ * 3. 函数式工具：使用 Function 接口，无状态
+ * 4. returnDirect 模式：工具结果直接返回给用户
+ */
 public class ToolExamples {
 
+    /**
+     * 主方法：运行工具调用示例
+     * 
+     * 【关键点】
+     * 1. 从环境变量 MINIMAX_API_KEY 读取 API 密钥
+     * 2. 创建 ChatModel 和 ChatClient
+     * 3. 运行不同类型的工具调用示例
+     */
     public static void main(String[] args){
         String apiKey = System.getenv("MINIMAX_API_KEY");
         if (apiKey == null || apiKey.isEmpty()) {
@@ -43,6 +60,17 @@ public class ToolExamples {
         System.out.println("=".repeat(60));
     }
 
+    /**
+     * 注解式工具调用示例
+     * 
+     * 【关键点】
+     * 1. 使用 @Tool 注解标记方法
+     * 2. 自动生成 JSON Schema 描述参数
+     * 3. 最简单、最常用的方式
+     * 4. 直接通过 chatClient.tools() 注册工具对象
+     * 
+     * @param chatClient ChatClient 实例
+     */
     private static void annotationBasedTool(ChatClient chatClient) {
         System.out.println("\n--- 注解式 @Tool (简单、常用、自动 Schema) ---");
 
@@ -58,6 +86,17 @@ public class ToolExamples {
         System.out.println("助手: " + response);
     }
 
+    /**
+     * 编程式工具调用示例（反射方式）
+     * 
+     * 【关键点】
+     * 1. 使用 MethodToolCallback.builder() 构建工具
+     * 2. 通过反射获取方法对象
+     * 3. 可以自定义工具名称和描述
+     * 4. 灵活性最高，但代码较多
+     * 
+     * @param chatClient ChatClient 实例
+     */
     private static void programmaticToolCallback(ChatClient chatClient) {
         System.out.println("\n--- 编程式 MethodToolCallback (反射、动态注册) ---");
 
@@ -81,6 +120,17 @@ public class ToolExamples {
         System.out.println("助手: " + response);
     }
 
+    /**
+     * 函数式工具调用示例
+     * 
+     * 【关键点】
+     * 1. 使用 Function 接口
+     * 2. 完全无状态
+     * 3. 手动编写 JSON Schema
+     * 4. 适合简单的工具
+     * 
+     * @param chatClient ChatClient 实例
+     */
     private static void functionToolCallback(ChatClient chatClient) throws NoSuchMethodException {
         System.out.println("\n--- 函数式 FunctionToolCallback (纯函数、无状态) ---");
 
@@ -117,6 +167,17 @@ public class ToolExamples {
         System.out.println("助手: " + response);
     }
 
+    /**
+     * returnDirect 模式工具调用示例
+     * 
+     * 【关键点】
+     * 1. 工具结果直接返回给用户，不经过 LLM
+     * 2. 适合返回简单数据（如时间、天气）
+     * 3. 减少 Token 消耗
+     * 4. 需要模型支持
+     * 
+     * @param chatClient ChatClient 实例
+     */
     private static void returnDirectMode(ChatClient chatClient) {
         System.out.println("\n--- 执行模式: returnDirect (直返用户) ---");
 

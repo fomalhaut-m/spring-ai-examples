@@ -11,8 +11,25 @@ import org.springframework.ai.minimax.api.MiniMaxApi;
 
 import reactor.core.publisher.Flux;
 
+/**
+ * MiniMax 聊天模型示例
+ * 
+ * 【关键点】
+ * 1. 演示 MiniMax 模型的各种功能
+ * 2. 支持基本对话、参数调优、系统消息、流式响应等
+ * 3. 温度参数控制生成随机性
+ * 4. 最大令牌数限制响应长度
+ */
 public class MiniMaxChatExample {
 
+    /**
+     * 主方法：运行聊天示例
+     * 
+     * 【关键点】
+     * 1. 从环境变量读取 API 密钥
+     * 2. 创建 ChatModel 和 ChatClient
+     * 3. 运行所有示例
+     */
     public static void main(String[] args) {
         String apiKey = System.getenv("MINIMAX_API_KEY");
         if (apiKey == null || apiKey.isEmpty()) {

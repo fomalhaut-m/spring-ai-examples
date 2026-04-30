@@ -15,16 +15,22 @@
 */ 
 package com.example.mcp.provider;
 
+import java.time.LocalDateTime;
+
 import org.slf4j.Logger;
 import org.springaicommunity.mcp.annotation.McpTool;
 import org.springaicommunity.mcp.annotation.McpToolParam;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestClient;
 
-import java.time.LocalDateTime;
-
 /**
- * @author Christian Tzolov
+ * MCP 工具提供者
+ * 
+ * 【关键点】
+ * 1. 使用 @McpTool 注解声明 MCP 工具
+ * 2. 使用 @McpToolParam 注解声明工具参数
+ * 3. 提供天气查询功能作为示例
+ * 4. 通过 RestClient 调用外部 API
  */
 @Service
 public class ToolProvider {
@@ -42,20 +48,34 @@ public class ToolProvider {
 		}
 	}
 
+	/**
+	 * 获取特定位置的温度
+	 * 
+	 * 【关键点】
+	 * 1. @McpTool 注解标记这是一个 MCP 工具
+	 * 2. @McpToolParam 注解标记参数并提供描述
+	 * 3. 使用 Open-Meteo API 获取实时天气数据
+	 * 4. 记录日志便于调试
+	 * 
+	 * @param latitude 纬度
+	 * @param longitude 经度
+	 * @param city 城市名称
+	 * @return 天气响应
+	 */
 	@McpTool(description = "Get the temperature (in celsius) for a specific location")
 	public WeatherResponse getTemperature(@McpToolParam(description = "The location latitude") double latitude,
 			@McpToolParam(description = "The location longitude") double longitude,
 			@McpToolParam(description = "The city name") String city) {
 
 		WeatherResponse response = restClient
-				.get()
-				.uri("https://api.open-meteo.com/v1/forecast?latitude={latitude}&longitude={longitude}&current=temperature_2m",
-						latitude, longitude)
-				.retrieve()
-				.body(WeatherResponse.class);
+			.get()
+			.uri("https://api.open-meteo.com/v1/forecast?latitude={latitude}&longitude={longitude}&current=temperature_2m",
+					latitude, longitude)
+			.retrieve()
+			.body(WeatherResponse.class);
 
 		logger.info("Check temparature for {}. Lat: {}, Lon: {}. Temp: {}", city, latitude, longitude,
-				response.current);
+				response.current());
 
 		return response;
 	}

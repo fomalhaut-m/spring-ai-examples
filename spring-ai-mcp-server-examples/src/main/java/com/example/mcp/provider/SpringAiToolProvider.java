@@ -15,24 +15,48 @@
 */
 package com.example.mcp.provider;
 
-import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
-import com.fasterxml.jackson.annotation.JsonProperty;
+import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
+
 import org.springframework.ai.tool.annotation.Tool;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestClient;
 import org.springframework.web.client.RestClientException;
 
-import java.util.List;
-import java.util.Map;
-import java.util.stream.Collectors;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import com.fasterxml.jackson.annotation.JsonProperty;
 
+/**
+ * Spring AI 工具提供者
+ * 
+ * 【关键点】
+ * 1. 使用 Spring AI 的 @Tool 注解而非 MCP 的 @McpTool
+ * 2. 通过 MethodToolCallbackProvider 注册为 MCP 工具
+ * 3. 提供天气相关的工具功能
+ * 4. 使用 RestClient 调用外部天气 API
+ */
 @Service
 public class SpringAiToolProvider {
 
+	/**
+	 * 天气 API 基础 URL
+	 */
 	private static final String BASE_URL = "https://api.weather.gov";
 
+	/**
+	 * RestClient 实例，用于调用天气 API
+	 */
 	private final RestClient restClient;
 
+	/**
+	 * 构造函数：初始化 RestClient
+	 * 
+	 * 【关键点】
+	 * 1. 设置基础 URL
+	 * 2. 配置 Accept 头为 application/geo+json
+	 * 3. 配置 User-Agent 头（天气 API 要求）
+	 */
 	public SpringAiToolProvider() {
 
 		this.restClient = RestClient.builder()
@@ -42,6 +66,13 @@ public class SpringAiToolProvider {
 			.build();
 	}
 
+	/**
+	 * 地点信息记录
+	 * 
+	 * 【关键点】
+	 * 1. @JsonIgnoreProperties(ignoreUnknown = true) 忽略未知字段
+	 * 2. properties 包含 forecast URL
+	 */
 	@JsonIgnoreProperties(ignoreUnknown = true)
 	public record Points(@JsonProperty("properties") Props properties) {
 		@JsonIgnoreProperties(ignoreUnknown = true)
@@ -49,6 +80,13 @@ public class SpringAiToolProvider {
 		}
 	}
 
+	/**
+	 * 天气预报记录
+	 * 
+	 * 【关键点】
+	 * 1. properties 包含多个时间段的预报
+	 * 2. Period 记录包含详细的预报信息
+	 */
 	@JsonIgnoreProperties(ignoreUnknown = true)
 	public record Forecast(@JsonProperty("properties") Props properties) {
 		@JsonIgnoreProperties(ignoreUnknown = true)
@@ -68,6 +106,13 @@ public class SpringAiToolProvider {
 		}
 	}
 
+	/**
+	 * 天气警报记录
+	 * 
+	 * 【关键点】
+	 * 1. features 包含多个警报
+	 * 2. 每个警报包含事件类型、区域、严重程度等信息
+	 */
 	@JsonIgnoreProperties(ignoreUnknown = true)
 	public record Alert(@JsonProperty("features") List<Feature> features) {
 
@@ -83,11 +128,18 @@ public class SpringAiToolProvider {
 	}
 
 	/**
-	 * Get forecast for a specific latitude/longitude
-	 * @param latitude Latitude
-	 * @param longitude Longitude
-	 * @return The forecast for the given location
-	 * @throws RestClientException if the request fails
+	 * 根据经纬度获取天气预报
+	 * 
+	 * 【关键点】
+	 * 1. @Tool 注解标记这是一个工具
+	 * 2. 先通过经纬度获取地点信息，再获取预报
+	 * 3. 将多个时间段的预报格式化为字符串返回
+	 * 4. 适用于 RAG 场景，让 AI 能调用获取天气信息
+	 * 
+	 * @param latitude 纬度
+	 * @param longitude 经度
+	 * @return 天气预报文本
+	 * @throws RestClientException 如果请求失败
 	 */
 	@Tool(description = "Get weather forecast for a specific latitude/longitude")
 	public String getWeatherForecastByLocation(double latitude, double longitude) {
@@ -113,10 +165,16 @@ public class SpringAiToolProvider {
 	}
 
 	/**
-	 * Get alerts for a specific area
-	 * @param state Area code. Two-letter US state code (e.g. CA, NY)
-	 * @return Human readable alert information
-	 * @throws RestClientException if the request fails
+	 * 获取特定区域的天气警报
+	 * 
+	 * 【关键点】
+	 * 1. 接受两个字母的美国州代码作为参数
+	 * 2. 将多个警报格式化为可读字符串返回
+	 * 3. 适用于让 AI 获取天气预警信息
+	 * 
+	 * @param state 州代码（例如 CA、NY）
+	 * @return 可读的警报信息
+	 * @throws RestClientException 如果请求失败
 	 */
 	@Tool(description = "Get weather alerts for a US state. Input is Two-letter US state code (e.g. CA, NY)")
 	public String getAlerts(String state) {
@@ -135,6 +193,14 @@ public class SpringAiToolProvider {
 			.collect(Collectors.joining("\n"));
 	}
 
+	/**
+	 * 主方法：测试天气工具
+	 * 
+	 * 【关键点】
+	 * 1. 创建 SpringAiToolProvider 实例
+	 * 2. 测试获取天气预报和警报
+	 * 3. 用于独立测试工具功能
+	 */
 	public static void main(String[] args) {
 		SpringAiToolProvider client = new SpringAiToolProvider();
 		System.out.println(client.getWeatherForecastByLocation(47.6062, -122.3321));

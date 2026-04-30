@@ -4,6 +4,11 @@
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
 
+    <!-- 父 POM：Spring Boot -->
+    <!-- 【关键点】
+         1. 继承 Spring Boot 的默认配置
+         2. 版本 3.3.5，需要 Java 17+
+    -->
     <parent>
         <groupId>org.springframework.boot</groupId>
         <artifactId>spring-boot-starter-parent</artifactId>
@@ -11,10 +16,12 @@
         <relativePath />
     </parent>
 
+    <!-- 项目基本信息 -->
     <groupId>fomalhaut</groupId>
     <artifactId>spring-ai-mcp-client-examples</artifactId>
     <version>1.0.0</version>
 
+    <!-- 属性配置 -->
     <properties>
         <maven.compiler.source>17</maven.compiler.source>
         <maven.compiler.target>17</maven.compiler.target>
@@ -22,6 +29,11 @@
         <jackson.version>2.19.4</jackson.version>
     </properties>
 
+    <!-- 依赖管理：导入 Spring AI BOM 和 Jackson BOM -->
+    <!-- 【关键点】
+         1. BOM 统一管理依赖版本
+         2. 避免版本冲突
+    -->
     <dependencyManagement>
         <dependencies>
             <dependency>
@@ -41,28 +53,37 @@
         </dependencies>
     </dependencyManagement>
 
+    <!-- 依赖列表 -->
     <dependencies>
 
+        <!-- Spring Boot 基础依赖 -->
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter</artifactId>
         </dependency>
 
+        <!-- MiniMax 模型支持 -->
         <dependency>
             <groupId>org.springframework.ai</groupId>
             <artifactId>spring-ai-starter-model-minimax</artifactId>
         </dependency>
 
+        <!-- MCP 客户端支持 -->
+        <!-- 【关键点】
+             1. 提供 MCP 客户端核心功能
+             2. 支持 SSE、Streamable HTTP、STDIO 等传输方式
+             3. 自动将 MCP 工具注册为 Spring AI 工具
+        -->
         <dependency>
             <groupId>org.springframework.ai</groupId>
             <artifactId>spring-ai-starter-mcp-client</artifactId>
         </dependency>
 
+        <!-- Jackson JSON 处理（用于 MCP 协议） -->
         <dependency>
             <groupId>com.fasterxml.jackson.core</groupId>
             <artifactId>jackson-core</artifactId>
         </dependency>
-
         <dependency>
             <groupId>com.fasterxml.jackson.core</groupId>
             <artifactId>jackson-databind</artifactId>
