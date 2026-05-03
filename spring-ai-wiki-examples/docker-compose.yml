@@ -1,0 +1,43 @@
+version: '3.8'
+
+services:
+  # MongoDB 数据库
+  mongodb:
+    image: mongo:7.0
+    container_name: spring-ai-mongodb
+    restart: unless-stopped
+    ports:
+      - "27017:27017"
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: admin
+      MONGO_INITDB_ROOT_PASSWORD: admin
+      MONGO_INITDB_DATABASE: spring-ai-wiki
+    volumes:
+      - mongodb_data:/data/db
+    networks:
+      - spring-ai-network
+
+  # Chroma 向量数据库
+  chroma:
+    image: chromadb/chroma:latest
+    container_name: spring-ai-chroma
+    restart: unless-stopped
+    ports:
+      - "8000:8000"
+    environment:
+      - IS_PERSISTENT=TRUE
+      - PERSIST_DIRECTORY=/chroma/data
+    volumes:
+      - chroma_data:/chroma/data
+    networks:
+      - spring-ai-network
+
+volumes:
+  mongodb_data:
+    driver: local
+  chroma_data:
+    driver: local
+
+networks:
+  spring-ai-network:
+    driver: bridge

@@ -1,0 +1,285 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>智能对话 - Spring AI Wiki</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; background: #f5f5f5; min-height: 100vh; }
+        .header { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 15px 20px; display: flex; justify-content: space-between; align-items: center; }
+        .header h1 { font-size: 1.3em; }
+        .header a { color: white; text-decoration: none; margin-left: 15px; font-size: 0.9em; }
+        .container { max-width: 900px; margin: 15px auto; padding: 0 15px; }
+        .chat-container { background: white; border-radius: 12px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); padding: 15px; }
+        .session-bar { display: flex; gap: 10px; margin-bottom: 15px; padding-bottom: 15px; border-bottom: 1px solid #eee; flex-wrap: wrap; align-items: center; }
+        .session-bar select { flex: 1; min-width: 120px; padding: 8px 12px; border: 1px solid #ddd; border-radius: 6px; }
+        .session-bar button { padding: 8px 15px; border: none; border-radius: 6px; cursor: pointer; font-size: 0.9em; }
+        .btn-clear { background: #dc3545; color: white; }
+        .btn-history { background: #28a745; color: white; }
+        .toggle-stream { display: flex; align-items: center; gap: 8px; margin-left: auto; font-size: 0.85em; color: #666; }
+        .toggle-stream input { width: 16px; height: 16px; }
+        .messages { height: 450px; overflow-y: auto; margin-bottom: 15px; padding: 10px; border: 1px solid #eee; border-radius: 8px; }
+        .message { margin-bottom: 12px; padding: 12px; border-radius: 10px; max-width: 85%; word-wrap: break-word; }
+        .message.user { background: #667eea; color: white; margin-left: auto; border-bottom-right-radius: 3px; }
+        .message.ai { background: #f0f0f0; color: #333; border-bottom-left-radius: 3px; }
+        .message.system { background: #fff3cd; color: #856404; font-size: 0.85em; border: 1px solid #ffeeba; }
+        .message .time { font-size: 0.7em; opacity: 0.7; margin-top: 5px; }
+        .message .content { white-space: pre-wrap; font-family: inherit; }
+        .input-area { display: flex; gap: 10px; }
+        .input-area input { flex: 1; padding: 12px 15px; border: 1px solid #ddd; border-radius: 8px; font-size: 15px; }
+        .input-area button { padding: 12px 25px; background: #667eea; color: white; border: none; border-radius: 8px; cursor: pointer; font-size: 15px; }
+        .input-area button:hover { background: #5568d3; }
+        .input-area button:disabled { background: #ccc; cursor: not-allowed; }
+        .status { font-size: 0.8em; color: #999; margin-top: 8px; display: flex; justify-content: space-between; }
+        .streaming { color: #28a745; }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>💬 智能对话</h1>
+        <div><a href="/">首页</a><a href="/knowledge">知识库</a><a href="/map">地图</a></div>
+    </div>
+
+    <div class="container">
+        <div class="chat-container">
+            <div class="session-bar">
+                <select id="sessionId">
+                    <option value="default">默认会话</option>
+                    <option value="chat1">会话1</option>
+                    <option value="chat2">会话2</option>
+                    <option value="work">工作会话</option>
+                </select>
+                <button class="btn-history" onclick="loadHistory()">📜 历史</button>
+                <button class="btn-clear" onclick="clearMemory()">🗑️ 清除</button>
+                <label class="toggle-stream">
+                    <input type="checkbox" id="useStream">
+                    流式输出
+                </label>
+            </div>
+
+            <div class="messages" id="messages">
+                <div class="message ai">
+                    你好！我是 Spring AI Wiki 智能助手。
+                    <div class="time">支持流式输出 • 支持多会话 • 上下文记忆</div>
+                </div>
+            </div>
+
+            <div class="input-area">
+                <input type="text" id="message" placeholder="请输入消��..." onkeypress="handleKeyPress(event)">
+                <button onclick="sendMessage()" id="sendBtn">发送</button>
+            </div>
+
+            <div class="status">
+                <span id="statusText">就绪</span>
+                <span class="streaming" id="streamStatus" style="display:none;">🔵 流式输出中...</span>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const messagesDiv = document.getElementById('messages');
+        const messageInput = document.getElementById('message');
+        const sendBtn = document.getElementById('sendBtn');
+        const sessionSelect = document.getElementById('sessionId');
+        const useStream = document.getElementById('useStream');
+
+        let currentEventSource = null;
+
+        function handleKeyPress(e) {
+            if (e.key === 'Enter' && !e.shiftKey) {
+                e.preventDefault();
+                sendMessage();
+            }
+        }
+
+        function addMessage(content, type) {
+            const div = document.createElement('div');
+            div.className = 'message ' + type;
+
+            const contentDiv = document.createElement('div');
+            contentDiv.className = 'content';
+            contentDiv.textContent = content;
+
+            const timeDiv = document.createElement('div');
+            timeDiv.className = 'time';
+            timeDiv.textContent = new Date().toLocaleTimeString();
+
+            div.appendChild(contentDiv);
+            div.appendChild(timeDiv);
+            messagesDiv.appendChild(div);
+            messagesDiv.scrollTop = messagesDiv.scrollHeight;
+        }
+
+        async function sendMessage() {
+            const message = messageInput.value.trim();
+            if (!message) return;
+
+            addMessage(message, 'user');
+            messageInput.value = '';
+
+            if (currentEventSource) {
+                currentEventSource.close();
+            }
+
+            if (useStream.checked) {
+                await sendStream(message);
+            } else {
+                await sendNormal(message);
+            }
+        }
+
+        async function sendNormal(message) {
+            sendBtn.disabled = true;
+            document.getElementById('statusText').textContent = 'AI 思考中...';
+
+            try {
+                const response = await fetch('/api/chat', {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({
+                        message: message,
+                        sessionId: sessionSelect.value
+                    })
+                });
+
+                const result = await response.json();
+
+                if (result.code === 200) {
+                    addMessage(result.data, 'ai');
+                } else {
+                    addMessage('错误：' + result.message, 'system');
+                }
+            } catch (err) {
+                addMessage('错误：' + err, 'system');
+            }
+
+            sendBtn.disabled = false;
+            document.getElementById('statusText').textContent = '就绪';
+        }
+
+        async function sendStream(message) {
+            sendBtn.disabled = true;
+            document.getElementById('statusText').textContent = '连接中...';
+            document.getElementById('streamStatus').style.display = 'inline';
+
+            try {
+                const response = await fetch('/api/chat/stream', {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({
+                        message: message,
+                        sessionId: sessionSelect.value
+                    })
+                });
+
+                if (!response.ok) {
+                    throw new Error('HTTP ' + response.status + ': ' + response.statusText);
+                }
+
+                const reader = response.body.getReader();
+                const decoder = new TextDecoder();
+
+                const aiDiv = document.createElement('div');
+                aiDiv.className = 'message ai';
+                messagesDiv.appendChild(aiDiv);
+
+                const contentDiv = document.createElement('div');
+                contentDiv.className = 'content';
+                const timeDiv = document.createElement('div');
+                timeDiv.className = 'time';
+                timeDiv.textContent = '流式输出中...';
+                aiDiv.appendChild(contentDiv);
+                aiDiv.appendChild(timeDiv);
+
+                let fullContent = '';
+                let buffer = '';  // 缓冲区，处理跨 chunk 的不完整行
+
+                while (true) {
+                    const { done, value } = await reader.read();
+                    if (done) break;
+
+                    buffer += decoder.decode(value, { stream: true });
+
+                    // 处理缓冲区中的完整行
+                    while (true) {
+                        const newlineIndex = buffer.indexOf('\n');
+                        if (newlineIndex === -1) break;
+
+                        const line = buffer.slice(0, newlineIndex);
+                        buffer = buffer.slice(newlineIndex + 1);
+
+                        // 解析 SSE 格式：data:xxx 或 data: xxx
+                        if (line.startsWith('data:')) {
+                            const data = line.slice(5).trim();
+                            if (data && data !== '[DONE]') {
+                                fullContent += data;
+                                contentDiv.textContent = fullContent;
+                                messagesDiv.scrollTop = messagesDiv.scrollHeight;
+                            } else if (data === '[DONE]') {
+                                // 流结束
+                                break;
+                            }
+                        }
+                    }
+                }
+
+                document.getElementById('streamStatus').style.display = 'none';
+                document.getElementById('statusText').textContent = '完成';
+                sendBtn.disabled = false;
+                timeDiv.textContent = new Date().toLocaleTimeString();
+            } catch (err) {
+                addMessage('错误：' + err.message, 'system');
+                sendBtn.disabled = false;
+                document.getElementById('streamStatus').style.display = 'none';
+                document.getElementById('statusText').textContent = '连接失败';
+            }
+        }
+
+        async function loadHistory() {
+            try {
+                const response = await fetch('/api/chat/history', {
+                    method: 'GET',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({
+                        sessionId: sessionSelect.value
+                    })
+                });
+                const result = await response.json();
+
+                if (result.code === 200 && result.data) {
+                    const historyDiv = document.createElement('div');
+                    historyDiv.className = 'message system';
+                    historyDiv.innerHTML = '<strong>对话历史 (' + result.data.length + ' 条)：</strong><br><br>';
+
+                    result.data.forEach((msg, i) => {
+                        const type = i % 2 === 0 ? '用户' : 'AI';
+                        const content = msg.text || JSON.stringify(msg);
+                        historyDiv.innerHTML += (i + 1) + '. [' + type + '] ' + content + '<br>';
+                    });
+
+                    messagesDiv.appendChild(historyDiv);
+                    messagesDiv.scrollTop = messagesDiv.scrollHeight;
+                }
+            } catch (err) {
+                alert('加载历史失败：' + err);
+            }
+        }
+
+        async function clearMemory() {
+            if (!confirm('确定清除当前会话记忆？')) return;
+
+            try {
+                await fetch('/api/memory/' + sessionSelect.value, {method: 'DELETE'});
+                messagesDiv.innerHTML = '<div class="message ai">记忆已清除！</div>';
+            } catch (err) {
+                alert('清除失败：' + err);
+            }
+        }
+
+        sessionSelect.onchange = function() {
+            messagesDiv.innerHTML = '<div class="message ai">已切换到会话：' + this.value + '</div>';
+        }
+    </script>
+</body>
+</html>

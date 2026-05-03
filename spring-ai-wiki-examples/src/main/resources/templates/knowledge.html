@@ -1,0 +1,203 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>知识库 - Spring AI Wiki</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; background: #f5f5f5; min-height: 100vh; }
+        .header { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 15px 20px; display: flex; justify-content: space-between; align-items: center; }
+        .header h1 { font-size: 1.3em; }
+        .header a { color: white; text-decoration: none; margin-left: 15px; font-size: 0.9em; }
+        .container { max-width: 1000px; margin: 15px auto; padding: 0 15px; }
+        .card { background: white; border-radius: 12px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); padding: 20px; margin-bottom: 15px; }
+        .card h2 { margin-bottom: 15px; color: #333; font-size: 1.2em; }
+        .form-group { margin-bottom: 12px; }
+        .form-group label { display: block; margin-bottom: 5px; color: #666; font-size: 0.9em; }
+        .form-group input, .form-group textarea, .form-group select { width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 6px; font-size: 14px; font-family: inherit; }
+        .form-group textarea { min-height: 80px; resize: vertical; }
+        .btn { padding: 10px 20px; background: #667eea; color: white; border: none; border-radius: 6px; cursor: pointer; font-size: 14px; }
+        .btn:hover { background: #5568d3; }
+        .btn-success { background: #28a745; }
+        .btn-success:hover { background: #218838; }
+        .btn-danger { background: #dc3545; }
+        .btn-danger:hover { background: #c82333; }
+        .search-box { display: flex; gap: 10px; margin-bottom: 15px; }
+        .search-box input { flex: 1; padding: 10px; border: 1px solid #ddd; border-radius: 6px; }
+        .search-box button { padding: 10px 15px; border: none; border-radius: 6px; cursor: pointer; }
+        .search-box .btn { background: #667eea; color: white; }
+        .search-box .btn-success { background: #28a745; }
+        .info { background: #e7f3ff; border: 1px solid #b3d7ff; padding: 12px; border-radius: 6px; margin-bottom: 15px; color: #004085; font-size: 0.9em; }
+        .info code { background: #fff; padding: 2px 6px; border-radius: 4px; font-family: monospace; }
+        .knowledge-list { margin-top: 15px; }
+        .knowledge-item { border: 1px solid #eee; border-radius: 8px; padding: 12px; margin-bottom: 10px; display: flex; justify-content: space-between; align-items: center; }
+        .knowledge-item h4 { color: #333; margin-bottom: 5px; font-size: 1em; }
+        .knowledge-item p { color: #666; font-size: 0.9em; }
+        .knowledge-item .meta { color: #999; font-size: 0.8em; margin-top: 5px; }
+        .no-data { text-align: center; padding: 30px; color: #999; }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>📚 知识库</h1>
+        <div><a href="/">首页</a><a href="/chat">对话</a><a href="/map">地图</a></div>
+    </div>
+
+    <div class="container">
+        <!-- 添加知识 -->
+        <div class="card">
+            <h2>添加知识</h2>
+            <div class="info">
+                <strong>【关键点】</strong>知识会存入 <code>Chroma 向量库</code>，支持语义搜索！
+            </div>
+            <div class="form-group"><label>标题</label><input type="text" id="title" placeholder="请输入知识标题"></div>
+            <div class="form-group"><label>内容</label><textarea id="content" placeholder="请输入知识内容"></textarea></div>
+            <div class="form-group">
+                <label>分类</label>
+                <select id="category">
+                    <option value="general">通用</option>
+                    <option value="tech">技术</option>
+                    <option value="product">产品</option>
+                    <option value="faq">常见问题</option>
+                </select>
+            </div>
+            <button class="btn" onclick="addKnowledge()">保存</button>
+        </div>
+
+        <!-- 搜索知识 -->
+        <div class="card">
+            <h2>搜索知识</h2>
+            <div class="search-box">
+                <input type="text" id="searchQuery" placeholder="输入关键词搜索（使用向量语义搜索）...">
+                <button class="btn" onclick="searchKnowledge()">搜索</button>
+                <button class="btn btn-success" onclick="loadAll()">全部</button>
+            </div>
+            <div class="knowledge-list" id="knowledgeList">
+                <div class="no-data">暂无知识内容</div>
+            </div>
+        </div>
+
+        <!-- RAG 问答 -->
+        <div class="card">
+            <h2>💡 RAG 问答</h2>
+            <div class="form-group">
+                <label>会话ID</label>
+                <input type="text" id="qaSessionId" value="default" placeholder="会话ID">
+            </div>
+            <div class="form-group">
+                <label>问题</label>
+                <textarea id="qaQuestion" placeholder="输入问题，系统会从知识库检索相关内容后回答"></textarea>
+            </div>
+            <button class="btn btn-success" onclick="doQA()">提问</button>
+            <div class="knowledge-list" id="qaResult" style="margin-top: 15px;"></div>
+        </div>
+    </div>
+
+    <script>
+        async function addKnowledge() {
+            const title = document.getElementById('title').value.trim();
+            const content = document.getElementById('content').value.trim();
+            const category = document.getElementById('category').value;
+            if (!title || !content) { alert('请填写标题和内容'); return; }
+            try {
+                const response = await fetch('/api/knowledge', {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({
+                        title: title,
+                        content: content,
+                        category: category
+                    })
+                });
+                const result = await response.json();
+                if (result.code === 200) {
+                    alert('保存成功！');
+                    document.getElementById('title').value = '';
+                    document.getElementById('content').value = '';
+                    searchKnowledge();
+                } else {
+                    alert('保存失败：' + result.message);
+                }
+            } catch (err) { alert('保存失败：' + err); }
+        }
+
+        async function searchKnowledge() {
+            const query = document.getElementById('searchQuery').value.trim();
+            try {
+                const response = await fetch('/api/knowledge/search', {
+                    method: 'GET',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({ query: query || '' })
+                });
+                const result = await response.json();
+                if (result.code === 200) {
+                    renderKnowledge(result.data || []);
+                }
+            } catch (err) { console.error(err); }
+        }
+
+        async function loadAll() {
+            try {
+                const response = await fetch('/api/knowledge/search', {
+                    method: 'GET',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({ query: '' })
+                });
+                const result = await response.json();
+                if (result.code === 200) {
+                    renderKnowledge(result.data || []);
+                }
+            } catch (err) { console.error(err); }
+        }
+
+        function renderKnowledge(entries) {
+            const list = document.getElementById('knowledgeList');
+            if (!entries || entries.length === 0) {
+                list.innerHTML = '<div class="no-data">暂无知识内容</div>';
+                return;
+            }
+            list.innerHTML = '<p style="color:#667eea; margin-bottom:10px;">找到 ' + entries.length + ' 条知识：</p>' +
+                entries.map(entry => '<div class="knowledge-item"><div><h4>' + entry.title + '</h4><p>' + entry.content + '</p><span class="meta">分类：' + entry.category + '</span></div><button class="btn btn-danger" onclick="deleteKnowledge(\'' + entry.id + '\')">删除</button></div>').join('');
+        }
+
+        async function deleteKnowledge(id) {
+            if (!confirm('确定删除？')) return;
+            try {
+                const response = await fetch('/api/knowledge/' + id, {method: 'DELETE'});
+                const result = await response.json();
+                if (result.code === 200) { searchKnowledge(); }
+            } catch (err) { alert('删除失败：' + err); }
+        }
+
+        async function doQA() {
+            const question = document.getElementById('qaQuestion').value.trim();
+            const sessionId = document.getElementById('qaSessionId').value.trim() || 'default';
+            if (!question) { alert('请输入问题'); return; }
+
+            const resultDiv = document.getElementById('qaResult');
+            resultDiv.innerHTML = '<div class="no-data">AI 思考中...</div>';
+
+            try {
+                const response = await fetch('/api/knowledge/qa', {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({
+                        question: question,
+                        sessionId: sessionId
+                    })
+                });
+                const result = await response.json();
+                if (result.code === 200) {
+                    resultDiv.innerHTML = '<div class="info"><strong>回答：</strong><br>' + result.data.reply.replace(/\n/g, '<br>') + '<br><br><small>检索到 ' + result.data.knowledgeFound + ' 条相关知识</small></div>';
+                } else {
+                    resultDiv.innerHTML = '<div class="no-data">错误：' + result.message + '</div>';
+                }
+            } catch (err) { resultDiv.innerHTML = '<div class="no-data">错误：' + err + '</div>'; }
+        }
+
+        // 加载全部
+        loadAll();
+    </script>
+</body>
+</html>

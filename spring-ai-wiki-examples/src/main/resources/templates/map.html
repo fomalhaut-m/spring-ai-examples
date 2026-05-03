@@ -1,0 +1,185 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>高德地图 - Spring AI Wiki</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            background: #f5f5f5;
+            min-height: 100vh;
+        }
+        .header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .header h1 { font-size: 1.5em; }
+        .header a { color: white; text-decoration: none; margin-left: 20px; }
+        .container {
+            max-width: 900px;
+            margin: 20px auto;
+            padding: 0 20px;
+        }
+        .card {
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            padding: 25px;
+            margin-bottom: 20px;
+        }
+        .card h2 { margin-bottom: 20px; color: #333; }
+        .info {
+            background: #f8f9fa;
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            color: #666;
+        }
+        .info code {
+            background: #e9ecef;
+            padding: 2px 6px;
+            border-radius: 4px;
+            font-family: monospace;
+        }
+        .form-group { margin-bottom: 15px; }
+        .form-group label { display: block; margin-bottom: 5px; color: #666; }
+        .form-group input, .form-group select {
+            width: 100%;
+            padding: 12px;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            font-size: 14px;
+        }
+        .btn {
+            padding: 12px 25px;
+            background: #667eea;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 14px;
+        }
+        .btn:hover { background: #5568d3; }
+        .tools {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+        .tool-card {
+            background: #f8f9fa;
+            padding: 20px;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.3s;
+            text-align: center;
+        }
+        .tool-card:hover {
+            background: #fff;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+        }
+        .tool-card h3 { color: #667eea; margin-bottom: 10px; }
+        .tool-card p { color: #666; font-size: 0.9em; }
+        .result {
+            background: #f0f0f0;
+            padding: 15px;
+            border-radius: 8px;
+            white-space: pre-wrap;
+            font-family: monospace;
+            font-size: 0.9em;
+            max-height: 300px;
+            overflow-y: auto;
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>🗺️ 高德地图 MCP</h1>
+        <div>
+            <a href="/">首页</a>
+            <a href="/chat">对话</a>
+            <a href="/knowledge">知识库</a>
+        </div>
+    </div>
+
+    <div class="container">
+        <div class="card">
+            <h2>功能说明</h2>
+            <div class="info">
+                <p>本页面集成高德地图 MCP 工具，支持：</p>
+                <ul>
+                    <li>🔍 <code>poi_search</code> - 搜索地点（如餐厅、加���站）</li>
+                    <li>🛣️ <code>route_plan</code> - 路线规划（驾车/公交/步行）</li>
+                    <li>🌤️ <code>weather</code> - 天气查询</li>
+                    <li>📍 <code>geocoding</code> - 地址解析</li>
+                </ul>
+                <p style="margin-top: 10px;">注意：需要先配置 MCP Server 才能使用这些功能。</p>
+            </div>
+
+            <h2>可用工具</h2>
+            <div class="tools">
+                <div class="tool-card" onclick="showToolInfo('搜索')">
+                    <h3>🔍 地点搜索</h3>
+                    <p>搜索附近的餐厅、加油站、商场等</p>
+                </div>
+                <div class="tool-card" onclick="showToolInfo('路线')">
+                    <h3>🛣️ 路线规划</h3>
+                    <p>规划两点之间的驾车路线</p>
+                </div>
+                <div class="tool-card" onclick="showToolInfo('天气')">
+                    <h3>🌤️ 天气查询</h3>
+                    <p>查询指定城市的天气信息</p>
+                </div>
+                <div class="tool-card" onclick="showToolInfo('地址')">
+                    <h3>📍 地址解析</h3>
+                    <p>将地址转换为坐标</p>
+                </div>
+            </div>
+
+            <h2>快速测试</h2>
+            <div class="form-group">
+                <label>输入地址或地点</label>
+                <input type="text" id="queryInput" placeholder="例如：北京市朝阳区望京">
+            </div>
+            <div class="form-group">
+                <label>工具类型</label>
+                <select id="toolType">
+                    <option value="search">地点搜索</option>
+                    <option value="weather">天气查询</option>
+                </select>
+            </div>
+            <button class="btn" onclick="testTool()">执行</button>
+
+            <div id="resultArea" style="display:none; margin-top: 20px;">
+                <h3>执行结果：</h3>
+                <div class="result" id="resultContent"></div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        function showToolInfo(tool) {
+            alert('请先确保 MCP Server 已配置在：https://mcp.amap.com\n\n工具：' + tool + '\n\n在对话页面使用可获得更完整的功能。');
+        }
+
+        async function testTool() {
+            const query = document.getElementById('queryInput').value.trim();
+            const toolType = document.getElementById('toolType').value;
+
+            if (!query) {
+                alert('请输入内容');
+                return;
+            }
+
+            // 由于 MCP 需要服务端支持，这里演示简单提示
+            alert('MCP 工具需要在服务端配置后使用。\n\n当前输入：' + query + '\n工具类型：' + toolType + '\n\n建议：\n1. 在对话页面直接提问"从XX到XX怎么走"或"XX的天气怎么样"\n2. 或配置 MCP Server 后使用完整功能');
+        }
+    </script>
+</body>
+</html>

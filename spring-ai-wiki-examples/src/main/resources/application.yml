@@ -1,0 +1,72 @@
+# Spring AI Wiki 配置文件
+
+server:
+  port: 8080
+
+spring:
+  application:
+    name: spring-ai-wiki
+
+  # MongoDB 配置（带认证）
+  data:
+    mongodb:
+      host: localhost
+      port: 27017
+      database: spring-ai-wiki
+      username: admin
+      password: admin
+      authentication-database: admin
+
+  ai:
+    # MiniMax 配置
+    minimax:
+      api-key: ${MINIMAX_API_KEY}
+      chat:
+        options:
+          model: MiniMax-M2.7
+      embedding:
+        base-url: ${spring.ai.minimax.base-url:}
+        api-key: ${MINIMAX_API_KEY2}
+        options:
+          model: embo-01
+
+    # Chat Memory MongoDB
+    chat:
+      memory:
+        repository:
+          mongodb:
+            initialize-schema: always
+
+    # 重试配置
+    retry:
+      max-attempts: 10                    # 最大重试次数
+      backoff:
+        initial-interval: 2s               # 初始重试间隔
+        multiplier: 5                      # 间隔乘数
+        max-interval: 3m                   # 最大间隔
+      on-client-errors: false              # 是否对4xx错误重试
+      exclude-on-http-codes: 400, 401      # 不重试的HTTP状态码
+      on-http-codes: 502, 503, 504         # 需要重试的HTTP状态码
+
+    # Chroma 向量存储
+    vectorstore:
+      chroma:
+        client:
+          host: http://localhost
+          port: 8000
+        collection-name: spring-ai-wiki-collection
+        initialize-schema: true
+
+    # MCP 高德地图
+    mcp:
+      client:
+        sse:
+          connections:
+            amap:
+              url: https://mcp.amap.com
+              sseEndpoint: /sse?key=b5fbf3f5afb33ad74b1f8542629f8e17
+
+#logging:
+#  level:
+#    org.springframework.ai: debug
+#    org.springframework.web.client.DefaultRestClient: debug

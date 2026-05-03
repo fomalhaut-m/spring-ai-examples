@@ -22,6 +22,7 @@ import org.springframework.ai.minimax.api.MiniMaxApi;
 import org.springframework.ai.minimax.api.MiniMaxApiConstants;
 import org.springframework.ai.vectorstore.SearchRequest;
 import org.springframework.ai.vectorstore.VectorStore;
+import org.springframework.ai.vectorstore.filter.Filter;
 import org.springframework.ai.vectorstore.filter.FilterExpressionBuilder;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.boot.SpringApplication;
@@ -197,7 +198,7 @@ public class ChromaRagExamples {
         System.out.println("\n--- 元数据过滤搜索 ---");
 
         // 使用 FilterExpressionBuilder 构建过滤表达式
-        org.springframework.ai.vectorstore.filter.Filter.Expression filter = new FilterExpressionBuilder()
+        Filter.Expression filter = new FilterExpressionBuilder()
                 .and(
                         new FilterExpressionBuilder().in("category", "database"),
                         new FilterExpressionBuilder().gte("year", 2023)
